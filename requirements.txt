@@ -1,0 +1,7 @@
+streamlit
+groq
+fastembed
+faiss-cpu
+pypdf
+numpy
+supabase
