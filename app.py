@@ -27,14 +27,20 @@ Answer ONLY using the numbered context passages provided (university rules, sche
 
 st.set_page_config(page_title="Campus Assistant", page_icon="🎓", layout="centered")
 
-
 @st.cache_resource(show_spinner="Loading knowledge base...")
 def load_kb():
     state = load_state(get_store())
     if not state["chunks"]:
         return None
+
+    vectors = state["vectors"]
+    index = build_faiss(vectors)
+
+    del vectors
+    del state["vectors"]
+
     return {
-        "index": build_faiss(state["vectors"]),
+        "index": index,
         "chunks": state["chunks"],
         "manifest": state["manifest"],
     }

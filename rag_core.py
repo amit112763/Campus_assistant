@@ -74,9 +74,11 @@ def extract_chunks(data: bytes, name: str):
 # ------------------------------------------------------------- embeddings
 @lru_cache(maxsize=1)
 def get_embedder():
-    from fastembed import TextEmbedding  # imported lazily: keeps app start fast
-
-    return TextEmbedding(EMBED_MODEL)
+    from fastembed import TextEmbedding
+    return TextEmbedding(
+        model_name=EMBED_MODEL,
+        threads=1
+    )
 
 
 def _normalize(v: np.ndarray) -> np.ndarray:
@@ -84,7 +86,7 @@ def _normalize(v: np.ndarray) -> np.ndarray:
     return np.ascontiguousarray(v, dtype="float32")
 
 
-def embed_texts(texts, progress=None, batch_size=128) -> np.ndarray:
+def embed_texts(texts, progress=None, batch_size=32) -> np.ndarray:
     model, out = get_embedder(), []
     for i in range(0, len(texts), batch_size):
         out.extend(model.embed(texts[i:i + batch_size]))
@@ -198,8 +200,11 @@ def rebuild_all(store, progress=None):
 
 # ---------------------------------------------------------------- retrieval
 def build_faiss(vectors: np.ndarray):
+
     index = faiss.IndexFlatIP(vectors.shape[1])  # inner product == cosine (vectors normalised)
+
     index.add(np.ascontiguousarray(vectors, dtype="float32"))
+
     return index
 
 
